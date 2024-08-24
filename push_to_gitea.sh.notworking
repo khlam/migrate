@@ -30,18 +30,21 @@ for repo_path in "$repos_dir"/*; do
         repo_name=$(basename "$repo_path")
 
         echo "Processing $repo_name..."
-        echo "$GITEA_URL"
 
         # Navigate to the local repository
         cd "$repo_path" || exit
 
-        # Check if the 'gitea' remote already exists
+        # Check if the 'gitea' remote already exists and remove it if it does
         if git remote get-url gitea &>/dev/null; then
-            echo "Remote 'gitea' already exists for $repo_name."
-        else
-            # Add the new Gitea remote
-            git remote add gitea "$GITEA_URL/$GITEA_ORG/$repo_name.git"
+            echo "Remote 'gitea' already exists for $repo_name. Removing it."
+            git remote remove gitea
         fi
+
+        # Add the new Gitea remote
+        git remote add gitea "$GITEA_URL/$GITEA_ORG/$repo_name.git"
+
+        # Push an initial commit to create the repository on Gitea
+        git push gitea master || git push gitea main || true
 
         # Push all branches to the new Gitea repository
         git push gitea --all

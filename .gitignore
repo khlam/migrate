@@ -1,7 +1,7 @@
 wandb/
 all_repos.txt
 .ipynb_checkpoints/
-
+github_repos/
 
 **/.DS_Store
 

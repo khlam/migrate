@@ -48,20 +48,25 @@ while IFS= read -r repo; do
 
     echo "Cloning $ssh_url into $target_dir..."
 
-    # Clone the repository with all branches into the output directory
-    git clone --mirror "$ssh_url" "$target_dir"
+    # Clone the repository into the output directory
+    git clone "$ssh_url" "$target_dir"
 
     # Change to the repo directory
     cd "$target_dir" || exit
 
-    # Check out all branches
-    for branch in $(git branch -r | grep -v '\->'); do
-        git branch --track "${branch##origin/}" "$branch"
+    # Fetch all branches
+    git fetch --all
+
+    # Set up local tracking for all remote branches
+    for branch in $(git branch -r | grep -v '\->' | sed 's/origin\///'); do
+        if ! git branch --list | grep -q "$branch"; then
+            git checkout -b "$branch" "origin/$branch"
+        fi
     done
 
     # Return to the root directory
     cd - > /dev/null
 
-    echo "$repo_name cloned successfully into $target_dir."
+    echo "$repo_name cloned successfully with all branches into $target_dir."
 
 done < "$1"
